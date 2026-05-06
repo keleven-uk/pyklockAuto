@@ -1,0 +1,33 @@
+###############################################################################################################
+#    history.txt   Copyright (C) <2026>  <Kevin Scott>                                                     #
+#                                                                                                             #
+#    History file for pyklockAuto.                                                                               #
+#                                                                                                             #
+###############################################################################################################
+#                                                                                                             #
+#    This program is free software: you can redistribute it and/or modify it under the terms of the           #
+#    GNU General Public License as published by the Free Software Foundation, either Version 3 of the         #
+#    License, or (at your option) any later Version.                                                          #
+#                                                                                                             #
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without        #
+#    even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               #
+#    GNU General Public License for more details.                                                             #
+#                                                                                                             #
+#    You should have received a copy of the GNU General Public License along with this program.               #
+#    If not, see <http://www.gnu.org/licenses/>.                                                              #
+#                                                                                                             #
+###############################################################################################################
+
+pyklockAuto will [eventually] contain a number of agents that will poll a number of sensors attached to a vehicle [motorbike].
+The sensors will primarily monitor gps data and log position - but more may be added.
+
+The main program will collated this dat and display the information from either one journey or multiple journeys.
+    The main display is probably on a map.
+
+The agents will come shortly.
+
+
+V2026.1   [6 May 2026]
+
+	Imported pyStub_PyQt to create a blank pyklockAuto.
+	 Made the appropriate changes so that pyklockAuto is used throughout.

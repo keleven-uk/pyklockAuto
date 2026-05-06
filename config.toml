@@ -1,0 +1,16 @@
+#   Configure file for pyklockAuto 
+#   (c) Kevin Scott   Written Wednesday 06 May 2026  21:40:32
+#
+#   true and false are lower case 
+#
+[INFO]
+myVERSION = "2026.1"
+myNAME = "pyklockAuto"
+
+[APPLICATION]
+x_pos = 100
+y_pos = 100
+width = 400
+height = 400
+confirmExit = false
+style = "MaterialDark.qss"
