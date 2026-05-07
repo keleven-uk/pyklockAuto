@@ -37,9 +37,11 @@ if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):   #  Running as a
     RESOURCE_PATH = "resources"
     HELP_PATH     = "help"
     STYLE_PATH    = "resources/style"
+    DATA_PATH     = "data"
 else:
      CONFIG_PATH   = MAIN_PATH / "config.toml"
      LOGGER_PATH   = MAIN_PATH / "logs/pyklockAuto.log"        #  HARD CODED
      RESOURCE_PATH = MAIN_PATH / "resources"
      HELP_PATH     = MAIN_PATH / "help"
      STYLE_PATH    = MAIN_PATH / "resources/style"
+     DATA_PATH     = MAIN_PATH / "data"

@@ -19,9 +19,13 @@
 #                                                                                                             #
 ###############################################################################################################
 
+import os
+
 import win32api
 import win32con
 import ctypes
+
+from src.projectPaths import DATA_PATH
 
 def getState():
     """  Checks the current state of Caps Lock, Insert, Scroll Lock & Num Lock.
@@ -114,4 +118,15 @@ def getBootTime():
 
     return (t)
 
+def getDataDirectories():
+    """  Return a list of sub-directories within the directory od data.
+         The special directories .tmp.driveupload is excluded - used my MEGA backup.
+    """
+    subs = []
+    with os.scandir(f"{DATA_PATH}") as dirs:
+        for entry in dirs:
+            if entry.is_dir() and not entry.name.startswith(".tmp") :
+                subs.append(entry.name)
+
+    return subs
 

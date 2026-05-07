@@ -26,6 +26,14 @@ The main program will collated this dat and display the information from either 
 
 The agents will come shortly.
 
+V2026.2   [7 May 2026]
+
+	The main display consists of a plain text edit and a list view, with an combo box above these and control buttons below.
+		The combo box allows the data directory to be chosen.
+		The text edit display system information.
+		The list view display the data file within the chosen date directory.
+	The control buttons consist of Add New Files, Add All Files and Close - only Close already implemented.
+	
 
 V2026.1   [6 May 2026]
 

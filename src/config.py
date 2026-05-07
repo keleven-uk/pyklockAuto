@@ -63,7 +63,7 @@ class Config():
     def NAME(self):
         """  Returns the application name.
         """
-        return self.config["INFO"].get("myNAME", "pyklockAuto)
+        return self.config["INFO"].get("myNAME", "pyklockAuto")
 
     @property
     def VERSION(self):

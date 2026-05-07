@@ -66,7 +66,7 @@ class HelpViewer(QWidget):
     def loadHelpFile(self):
         """  Load the help file.
         """
-        path = f"{HELP_PATH}/pyStub_PyQt.pdf"
+        path = f"{HELP_PATH}/pyKlockAuto.pdf"
         self.pdfView = QPdfDocument(None)
         self.pdfView.load(path)
 

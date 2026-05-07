@@ -96,7 +96,6 @@ class Menu(QMenuBar):
         mnuHelp.addAction(self.actLicence)
         mnuHelp.addAction(self.actLogFile)
         mnuHelp.addSeparator()
-
         mnuHelp.addAction(self.actAbout)
 
         return menu

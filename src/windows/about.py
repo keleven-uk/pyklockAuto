@@ -29,7 +29,7 @@ from PyQt6.QtWidgets import (QDialog, QGridLayout, QVBoxLayout, QDialogButtonBox
 from PyQt6.QtGui     import QPixmap
 from PyQt6.QtCore    import Qt, QTimer, PYQT_VERSION_STR
 
-import src.utils.stubUtils as utils
+import src.utils.autoUtils as utils
 
 from src.projectPaths import RESOURCE_PATH
 

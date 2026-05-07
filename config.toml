@@ -1,5 +1,5 @@
 #   Configure file for pyklockAuto 
-#   (c) Kevin Scott   Written Wednesday 06 May 2026  21:40:32
+#   (c) Kevin Scott   Written Thursday 07 May 2026  22:24:37
 #
 #   true and false are lower case 
 #
@@ -10,7 +10,7 @@ myNAME = "pyklockAuto"
 [APPLICATION]
 x_pos = 100
 y_pos = 100
-width = 400
-height = 400
+width = 800
+height = 600
 confirmExit = false
 style = "MaterialDark.qss"

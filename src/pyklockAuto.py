@@ -24,12 +24,15 @@
 import time
 
 from PyQt6.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout, QMessageBox, QLabel,
-                             QPushButton, QFrame, QGroupBox)
-from PyQt6.QtCore    import Qt, QTimer, QDateTime
+                             QPushButton, QFrame, QGroupBox, QListView, QPlainTextEdit, QComboBox)
+from PyQt6.QtCore    import Qt, QDir, QTimer, QDateTime
+from PyQt6.QtGui     import QFileSystemModel
 
 import src.classes.menu as mu
 
-import src.utils.stubUtils as utils     
+import src.utils.autoUtils as utils     
+
+from src.projectPaths import DATA_PATH
 
 class mainWindow(QMainWindow):
     def __init__(self, myConfig, myLogger):
@@ -52,6 +55,11 @@ class mainWindow(QMainWindow):
         #self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         #self.setStyleSheet("background : transparent;")
 
+        self.subDirectories = utils.getDataDirectories()        #  A list of the sub directories under data.
+
+        self.fileModel = QFileSystemModel()
+        self.fileModel.setFilter(QDir.Filter.Files)
+
         #  Build GUI
         self.buildGUI()
         self.buildStatusBar()
@@ -65,37 +73,61 @@ class mainWindow(QMainWindow):
         """  Set up run time values from the config file.
              Also called if the config file changes.
         """
-        self.Xpos   = self.config.X_POS
-        self.Ypos   = self.config.Y_POS
-        self.width  = self.config.WIDTH
-        self.height = self.config.HEIGHT
+        self.Xpos     = self.config.X_POS
+        self.Ypos     = self.config.Y_POS
+        self.width    = self.config.WIDTH
+        self.height   = self.config.HEIGHT
+        self.dataPath = f"{DATA_PATH}/data_350"
 
     def buildGUI(self):
         """  Set up the GUI widgets.
         """
         self.logger.info(" Building GUI.")
         #  Create a central widget.
-        self.centralWidget = QFrame()
-        self.setCentralWidget(self.centralWidget)
-        self.centralLayout = QVBoxLayout()
-        self.ButtonLayout  = QHBoxLayout()
+        centralWidget = QFrame()
+        self.setCentralWidget(centralWidget)
 
-        self.stubGroup  = QGroupBox("pyklockAuto")
-        self.stubLayout = QHBoxLayout()
+        centralLayout = QVBoxLayout()
+        ButtonLayout  = QHBoxLayout()
 
-        #  insert widgets here.
+        mainGroup  = QGroupBox("pyklockAuto")
+        mainLayout = QVBoxLayout()
 
-        self.stubGroup.setLayout(self.stubLayout)
+        topLayout = QHBoxLayout()
+        midLayout = QHBoxLayout()
 
-        btnClose = QPushButton(text="Close", parent=self)
+        self.cbData = QComboBox(self)
+        self.cbData.currentTextChanged.connect(self.changeDataPath)
+        self.pteInfo = QPlainTextEdit("", self)
+        self.lvFileList = QListView()
+
+        self.cbData.addItems(self.subDirectories)
+
+        topLayout.addWidget(self.cbData)
+
+        midLayout.addWidget(self.pteInfo)
+        midLayout.addWidget(self.lvFileList)
+
+        mainLayout.addLayout(topLayout)
+        mainLayout.addLayout(midLayout)
+
+        mainGroup.setLayout(mainLayout)
+
+        btnAddNew = QPushButton(text="Add New Files", parent=self)
+        btnAddAll = QPushButton(text="Add All Files", parent=self)
+        btnClose  = QPushButton(text="Close", parent=self)
+        btnAddNew.clicked.connect(self.addNewFiles)
+        btnAddAll.clicked.connect(self.addAllFiles)
         btnClose.clicked.connect(self.close)
 
-        self.ButtonLayout.addWidget(btnClose)
+        ButtonLayout.addWidget(btnAddNew)
+        ButtonLayout.addWidget(btnAddAll)
+        ButtonLayout.addWidget(btnClose)
 
-        self.centralLayout.addWidget(self.stubGroup)
-        self.centralLayout.addLayout(self.ButtonLayout)
+        centralLayout.addWidget(mainGroup)
+        centralLayout.addLayout(ButtonLayout)
 
-        self.centralWidget.setLayout(self.centralLayout)
+        centralWidget.setLayout(centralLayout)
 
         #  Set up short timer to update the clock every second
         self.Timer = QTimer(self)
@@ -136,6 +168,29 @@ class mainWindow(QMainWindow):
         self.stsDate.setText(txtDate)
         self.stsState.setText(f"{utils.getState()}")
         self.stsIdle.setText(utils.getIdleDuration())
+    # ----------------------------------------------------------------------------------------------------------------------- changeDataPath() ------
+    def changeDataPath(self):
+        selected = self.cbData.currentText()
+        self.dataPath = f"{DATA_PATH}/{selected}"
+        self.updateFileList()
+    # ----------------------------------------------------------------------------------------------------------------------- updateFileList() ------
+    def updateFileList(self):
+        """
+        """
+        self.pteInfo.insertPlainText(f"Building file list {self.cbData.currentText()}.\n")
+        self.fileModel.setRootPath(self.dataPath) 
+        self.lvFileList.setModel(self.fileModel)
+        self.lvFileList.setRootIndex(self.fileModel.index(self.dataPath))
+    # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ------ --
+    def addNewFiles(self):
+        """
+        """
+        pass
+    # ----------------------------------------------------------------------------------------------------------------------- addAllFiles() ---------
+    def addAllFiles(self):
+        """
+        """
+        pass
    # ----------------------------------------------------------------------------------------------------------------------- closeEvent() ----------
     def closeEvent(self, event):
         """  Ask for confirmation before closing, if required.
