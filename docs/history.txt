@@ -26,6 +26,15 @@ The main program will collated this dat and display the information from either 
 
 The agents will come shortly.
 
+V2026.3   [19 May 2026]
+
+	Created a new branch as a backup of the main branch - FileSystemModel.
+		This branch uses the QT FileSystemModel to scan a directory and display the files ina list view.
+		The works, but I'm not sure how I can get at the individual files with manually scanning the directory myself.
+		If I go down this path, I might as well use this method to also populate the list box.
+		I have used this method in other projects and will use to fill the file store - to be used shortly.
+
+
 V2026.2   [7 May 2026]
 
 	The main display consists of a plain text edit and a list view, with an combo box above these and control buttons below.
