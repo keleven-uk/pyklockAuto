@@ -29,6 +29,7 @@ from PyQt6.QtCore    import Qt, QTimer, QDateTime
 from PyQt6.QtGui     import QBrush, QColorConstants
 
 import src.classes.menu as mu
+import src.classes.fileStore as fs
 
 import src.utils.autoUtils as utils     
 
@@ -42,7 +43,7 @@ class mainWindow(QMainWindow):
 
         self.config = myConfig
         self.logger = myLogger
-
+        
         self.updateValues()
 
         self.setWindowTitle(self.config.NAME)
@@ -66,6 +67,8 @@ class mainWindow(QMainWindow):
         self.myMenu.setVisible(True)
 
         self.pteInfo.insertPlainText(f"{self.config.NAME} {self.config.VERSION}.\n")
+
+        self.fStore = fs.FileStore(self.logger, self)            #  Create the file store.
 
         self.updateTime()
 
@@ -183,7 +186,7 @@ class mainWindow(QMainWindow):
             self.pteInfo.insertPlainText(f"Building file list for  {sub}.\n")
             self.subDirFiles[sub] = utils.listFiles(sb, False)                  #  Set to True to print file names to console.
 
-        self.lwFileList.addItems(self.subDirFiles["data_350"])
+        self.lwFileList.addItems(self.subDirFiles["data_350"][0])
         self.checkFileList("data_350")
     # ----------------------------------------------------------------------------------------------------------------------- changeDataPath() ------
     def changeDataPath(self):
@@ -194,17 +197,25 @@ class mainWindow(QMainWindow):
         selected = f"{self.cbData.currentText()}"
         if len(self.subDirFiles) != 0:                              #  If initially called, don't try to access an empty self.subDirFiles.
             self.lwFileList.clear()
-            self.lwFileList.addItems(self.subDirFiles[selected])
+            self.lwFileList.addItems(self.subDirFiles[selected][0])
             self.checkFileList(selected)
     # ----------------------------------------------------------------------------------------------------------------------- checkFileList() ------ --
     def checkFileList(self, sub):
-        """  For each file in the displayed file list, check is the file already exist in the file store.
+        """  For each file in the displayed file list, check is the file already exists in the file store.
              If the file has been already stored, display in green.
-             If the file is new, display in red.  ** not yet implemented. **
+             If the file is new, display in red and add to the file store. 
+
+             The key is the sub directory:file name.
+             The Data is the file path.
         """
         self.pteInfo.insertPlainText(f"Displaying files for {sub} \n")
-        for item in self.lwFileList.findItems('*', Qt.MatchFlag.MatchWildcard):
-            item.setForeground(QBrush(QColorConstants.Green)) 
+        for pos, item in enumerate(self.lwFileList.findItems("*", Qt.MatchFlag.MatchWildcard)):
+            key = f"{sub}:{item.text()}"                                    #  key = sub:fileName
+            if self.fStore.hasKey(key):
+                item.setForeground(QBrush(QColorConstants.Green)) 
+            else:
+                self.fStore.addItem(key, self.subDirFiles[sub][1][pos])     # addItem(sub:fileName, filepath)
+                item.setForeground(QBrush(QColorConstants.Red)) 
     # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ------ --
     def addNewFiles(self):
         """
@@ -239,7 +250,8 @@ class mainWindow(QMainWindow):
         """
         self.Timer.stop()           #  Stop the time when the frame closes.
         self.Timer = None           #  Hopefully, stop any memory leaks - maybe only need close()
-        self.saveConfig()
+        self.saveConfig()           #  Save the config file.
+        self.fStore.save()          #  Save the file store.
         self.logger.info(f"  Ending {self.config.NAME} Version {self.config.VERSION} ")
         self.logger.info("=" * 100)
     # ----------------------------------------------------------------------------------------------------------------------- saveConfig() ----------

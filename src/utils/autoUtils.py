@@ -135,12 +135,14 @@ def listFiles(dirPath, verbose):
          If screen is True [default], the file name will be printed to screen.
     """
     dataFiles = []
+    dataPaths = []
     dirObject = os.scandir(dirPath)
 
     for entry in dirObject:
         if entry.is_file():
             dataFiles.append(entry.name)
+            dataPaths.append(entry.path)
             if verbose:
                 print(f"Found data file :: {entry.name}")
 
-    return(dataFiles)
+    return(dataFiles, dataPaths)
