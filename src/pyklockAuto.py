@@ -24,9 +24,9 @@
 import time
 
 from PyQt6.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout, QMessageBox, QLabel,
-                             QPushButton, QFrame, QGroupBox, QListView, QPlainTextEdit, QComboBox)
-from PyQt6.QtCore    import Qt, QDir, QTimer, QDateTime
-from PyQt6.QtGui     import QFileSystemModel
+                             QPushButton, QFrame, QGroupBox, QListWidget, QPlainTextEdit, QComboBox)
+from PyQt6.QtCore    import Qt, QTimer, QDateTime
+from PyQt6.QtGui     import QBrush, QColorConstants
 
 import src.classes.menu as mu
 
@@ -56,9 +56,7 @@ class mainWindow(QMainWindow):
         #self.setStyleSheet("background : transparent;")
 
         self.subDirectories = utils.getDataDirectories()        #  A list of the sub directories under data.
-
-        self.fileModel = QFileSystemModel()
-        self.fileModel.setFilter(QDir.Filter.Files)
+        self.subDirFiles    = {}                                #  A dictionary, each entry will be a list of files for that sub directory.
 
         #  Build GUI
         self.buildGUI()
@@ -67,7 +65,12 @@ class mainWindow(QMainWindow):
 
         self.myMenu.setVisible(True)
 
+        self.pteInfo.insertPlainText(f"{self.config.NAME} {self.config.VERSION}.\n")
+
         self.updateTime()
+
+        self.BuildFileLists()
+
 
     def updateValues(self):
         """  Set up run time values from the config file.
@@ -99,14 +102,14 @@ class mainWindow(QMainWindow):
         self.cbData = QComboBox(self)
         self.cbData.currentTextChanged.connect(self.changeDataPath)
         self.pteInfo = QPlainTextEdit("", self)
-        self.lvFileList = QListView()
+        self.lwFileList = QListWidget()
 
         self.cbData.addItems(self.subDirectories)
 
         topLayout.addWidget(self.cbData)
 
         midLayout.addWidget(self.pteInfo)
-        midLayout.addWidget(self.lvFileList)
+        midLayout.addWidget(self.lwFileList)
 
         mainLayout.addLayout(topLayout)
         mainLayout.addLayout(midLayout)
@@ -117,7 +120,9 @@ class mainWindow(QMainWindow):
         btnAddAll = QPushButton(text="Add All Files", parent=self)
         btnClose  = QPushButton(text="Close", parent=self)
         btnAddNew.clicked.connect(self.addNewFiles)
+        btnAddNew.setEnabled(False)
         btnAddAll.clicked.connect(self.addAllFiles)
+        btnAddAll.setEnabled(False)
         btnClose.clicked.connect(self.close)
 
         ButtonLayout.addWidget(btnAddNew)
@@ -168,19 +173,38 @@ class mainWindow(QMainWindow):
         self.stsDate.setText(txtDate)
         self.stsState.setText(f"{utils.getState()}")
         self.stsIdle.setText(utils.getIdleDuration())
+    # ----------------------------------------------------------------------------------------------------------------------- BuildFileLists() ------
+    def BuildFileLists(self):
+        """  For each sub directory found [below the data directory.] - add a list of the files to a global dictionary.
+             Display files for data_350 initially - should this be the first dictionary entry.
+        """
+        for sub in self.subDirectories:
+            sb = f"{DATA_PATH}/{sub}"
+            self.pteInfo.insertPlainText(f"Building file list for  {sub}.\n")
+            self.subDirFiles[sub] = utils.listFiles(sb, False)                  #  Set to True to print file names to console.
+
+        self.lwFileList.addItems(self.subDirFiles["data_350"])
+        self.checkFileList("data_350")
     # ----------------------------------------------------------------------------------------------------------------------- changeDataPath() ------
     def changeDataPath(self):
-        selected = self.cbData.currentText()
-        self.dataPath = f"{DATA_PATH}/{selected}"
-        self.updateFileList()
-    # ----------------------------------------------------------------------------------------------------------------------- updateFileList() ------
-    def updateFileList(self):
+        """  When the desired data ic changed via tyhe combo box, display the required files in the file list.
+
+             Note: This method is first called when the combo bos is populated.
         """
+        selected = f"{self.cbData.currentText()}"
+        if len(self.subDirFiles) != 0:                              #  If initially called, don't try to access an empty self.subDirFiles.
+            self.lwFileList.clear()
+            self.lwFileList.addItems(self.subDirFiles[selected])
+            self.checkFileList(selected)
+    # ----------------------------------------------------------------------------------------------------------------------- checkFileList() ------ --
+    def checkFileList(self, sub):
+        """  For each file in the displayed file list, check is the file already exist in the file store.
+             If the file has been already stored, display in green.
+             If the file is new, display in red.  ** not yet implemented. **
         """
-        self.pteInfo.insertPlainText(f"Building file list {self.cbData.currentText()}.\n")
-        self.fileModel.setRootPath(self.dataPath) 
-        self.lvFileList.setModel(self.fileModel)
-        self.lvFileList.setRootIndex(self.fileModel.index(self.dataPath))
+        self.pteInfo.insertPlainText(f"Displaying files for {sub} \n")
+        for item in self.lwFileList.findItems('*', Qt.MatchFlag.MatchWildcard):
+            item.setForeground(QBrush(QColorConstants.Green)) 
     # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ------ --
     def addNewFiles(self):
         """

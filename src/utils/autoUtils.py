@@ -26,7 +26,7 @@ import win32con
 import ctypes
 
 from src.projectPaths import DATA_PATH
-
+ # ----------------------------------------------------------------------------------------------------------------------- getState() ---------------
 def getState():
     """  Checks the current state of Caps Lock, Insert, Scroll Lock & Num Lock.
          The results are returned as a sting.
@@ -59,7 +59,7 @@ def getState():
         state += "n"
 
     return state
-
+ # ----------------------------------------------------------------------------------------------------------------------- getIdleDuration() --------
 def getIdleDuration():
     """  Returns the number of seconds the PC has been idle.
          Uses the class LASTINPUTINFO above.
@@ -73,7 +73,7 @@ def getIdleDuration():
         return f"idle : {formatSeconds(idle)}"
     else:
         return "                "
-
+ # ----------------------------------------------------------------------------------------------------------------------- formatSeconds() ----------
 def formatSeconds(secs):
     """  Formats number of seconds into a human readable form i.e. hours:minutes:seconds
     """
@@ -90,7 +90,7 @@ def formatSeconds(secs):
         return f"{minutes:02.0f}m:{seconds:02.1f}s"
     else:
         return f"{seconds:02.1f}s"
-
+ # ----------------------------------------------------------------------------------------------------------------------- getBootTime() ------------
 def getBootTime():
     """  Returns the number of seconds since system boot up.
 
@@ -108,7 +108,7 @@ def getBootTime():
 
     # extracting hours, minutes, seconds & days from t
     # variable (which stores total time in seconds)
-    mins, sec = divmod(t, 60)
+    mins, sec  = divmod(t, 60)
     hour, mins = divmod(mins, 60)
     days, hour = divmod(hour, 24)
 
@@ -117,7 +117,7 @@ def getBootTime():
     #print(f"{days} days, {hour:02}:{mins:02}:{sec:02}")
 
     return (t)
-
+ # ----------------------------------------------------------------------------------------------------------------------- getDataDirectories() -----
 def getDataDirectories():
     """  Return a list of sub-directories within the directory od data.
          The special directories .tmp.driveupload is excluded - used my MEGA backup.
@@ -129,4 +129,18 @@ def getDataDirectories():
                 subs.append(entry.name)
 
     return subs
+ # ----------------------------------------------------------------------------------------------------------------------- listFiles() --------------
+def listFiles(dirPath, verbose):
+    """  Produce a list of data files in the data directory.
+         If screen is True [default], the file name will be printed to screen.
+    """
+    dataFiles = []
+    dirObject = os.scandir(dirPath)
 
+    for entry in dirObject:
+        if entry.is_file():
+            dataFiles.append(entry.name)
+            if verbose:
+                print(f"Found data file :: {entry.name}")
+
+    return(dataFiles)
