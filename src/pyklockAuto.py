@@ -23,6 +23,8 @@
 
 import time
 
+from pathlib import Path
+
 from PyQt6.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout, QMessageBox, QLabel,
                              QPushButton, QFrame, QGroupBox, QListWidget, QPlainTextEdit, QComboBox)
 from PyQt6.QtCore    import Qt, QTimer, QDateTime
@@ -52,10 +54,7 @@ class mainWindow(QMainWindow):
         self.menu   = mu.Menu(self.config, self.logger, self.startTime, self)
         self.myMenu = self.menu.buildMenu()
 
-        #self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
-        #self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        #self.setStyleSheet("background : transparent;")
-
+        self.fStore         = fs.FileStore(self.logger, self)   #  Create the file store.
         self.subDirectories = utils.getDataDirectories()        #  A list of the sub directories under data.
         self.subDirFiles    = {}                                #  A dictionary, each entry will be a list of files for that sub directory.
 
@@ -64,11 +63,7 @@ class mainWindow(QMainWindow):
         self.buildStatusBar()
         self.setMenuBar(self.myMenu)
 
-        self.myMenu.setVisible(True)
-
         self.pteInfo.insertPlainText(f"{self.config.NAME} {self.config.VERSION}.\n")
-
-        self.fStore = fs.FileStore(self.logger, self)            #  Create the file store.
 
         self.updateTime()
 
@@ -119,17 +114,17 @@ class mainWindow(QMainWindow):
 
         mainGroup.setLayout(mainLayout)
 
-        btnAddNew = QPushButton(text="Add New Files", parent=self)
-        btnAddAll = QPushButton(text="Add All Files", parent=self)
+        self.btnAddNew = QPushButton(text="Add New Files", parent=self)
+        self.btnAddAll = QPushButton(text="Add All Files", parent=self)
         btnClose  = QPushButton(text="Close", parent=self)
-        btnAddNew.clicked.connect(self.addNewFiles)
-        btnAddNew.setEnabled(False)
-        btnAddAll.clicked.connect(self.addAllFiles)
-        btnAddAll.setEnabled(False)
+        self.btnAddNew.clicked.connect(self.addNewFiles)
+        self.btnAddNew.setEnabled(False)
+        self.btnAddAll.clicked.connect(self.addAllFiles)
+        self.btnAddAll.setEnabled(False)
         btnClose.clicked.connect(self.close)
 
-        ButtonLayout.addWidget(btnAddNew)
-        ButtonLayout.addWidget(btnAddAll)
+        ButtonLayout.addWidget(self.btnAddNew)
+        ButtonLayout.addWidget(self.btnAddAll)
         ButtonLayout.addWidget(btnClose)
 
         centralLayout.addWidget(mainGroup)
@@ -168,9 +163,8 @@ class mainWindow(QMainWindow):
         """  Update the time, info line  and status bar every second.
         """
         dtCurrent = QDateTime.currentDateTime()
-        #txtTime   = dtCurrent.toString("HH:mm:ss")
         txtTime   = dtCurrent.toString("HH:mm")
-        txtDate = dtCurrent.toString("dddd dd MMMM yyyy")
+        txtDate   = dtCurrent.toString("dddd dd MMMM yyyy")
 
         self.stsTime.setText(txtTime)
         self.stsDate.setText(txtDate)
@@ -190,7 +184,7 @@ class mainWindow(QMainWindow):
         self.checkFileList("data_350")
     # ----------------------------------------------------------------------------------------------------------------------- changeDataPath() ------
     def changeDataPath(self):
-        """  When the desired data ic changed via tyhe combo box, display the required files in the file list.
+        """  When the desired data is changed via the combo box, display the required files in the file list.
 
              Note: This method is first called when the combo bos is populated.
         """
@@ -199,7 +193,7 @@ class mainWindow(QMainWindow):
             self.lwFileList.clear()
             self.lwFileList.addItems(self.subDirFiles[selected][0])
             self.checkFileList(selected)
-    # ----------------------------------------------------------------------------------------------------------------------- checkFileList() ------ --
+    # ----------------------------------------------------------------------------------------------------------------------- checkFileList() -------
     def checkFileList(self, sub):
         """  For each file in the displayed file list, check is the file already exists in the file store.
              If the file has been already stored, display in green.
@@ -208,25 +202,60 @@ class mainWindow(QMainWindow):
              The key is the sub directory:file name.
              The Data is the file path.
         """
-        self.pteInfo.insertPlainText(f"Displaying files for {sub} \n")
-        for pos, item in enumerate(self.lwFileList.findItems("*", Qt.MatchFlag.MatchWildcard)):
+        newFiles = False
+        for item in self.lwFileList.findItems("*", Qt.MatchFlag.MatchWildcard):
             key = f"{sub}:{item.text()}"                                    #  key = sub:fileName
             if self.fStore.hasKey(key):
                 item.setForeground(QBrush(QColorConstants.Green)) 
             else:
-                self.fStore.addItem(key, self.subDirFiles[sub][1][pos])     # addItem(sub:fileName, filepath)
                 item.setForeground(QBrush(QColorConstants.Red)) 
-    # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ------ --
+                newFiles = True
+
+        if newFiles:                        #  If new file are found, enable aff new File button.
+            self.btnAddNew.setEnabled(True)
+        else:
+            self.btnAddNew.setEnabled(False)
+
+        self.pteInfo.insertPlainText(f"Displaying files for {sub} - {self.lwFileList.count()} files \n")
+
+        self.reverseCheck(sub)
+    # ----------------------------------------------------------------------------------------------------------------------- reverseCheck() -------
+    def reverseCheck(self, sub):
+        """  Performs a reverse file check.
+             For each item in the filestore, check that the file actually exists.
+        """
+        self.pteInfo.insertPlainText(f"Reverse checking files for {sub} \n")
+
+        fileList = self.fStore.storedFiles()
+        copyList = list(fileList)
+
+        for key in copyList:                    # iterate over a copy, gets around the error dictionary changed size during iteration
+            if key.startswith(sub):
+                filePath = Path(self.fStore.getItem(key))
+                if not filePath.exists():
+                    self.pteInfo.insertPlainText(f"ERROR - {filePath}  does not exist \n")
+                    self.fStore.delItem(key)
+                    self.pteInfo.insertPlainText(f"ERROR - {filePath}  deleted from File Store \n")
+    # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ---------
     def addNewFiles(self):
         """
         """
-        pass
+        sub= f"{self.cbData.currentText()}"
+        for pos, item in enumerate(self.lwFileList.findItems("*", Qt.MatchFlag.MatchWildcard)):
+            fname = item.text()
+            key   = f"{sub}:{fname}"  
+            if not self.fStore.hasKey(key):                                  #  key = sub:fileName
+                self.pteInfo.insertPlainText(f"Adding {fname} \n")
+                item.setForeground(QBrush(QColorConstants.Green)) 
+                self.fStore.addItem(key, self.subDirFiles[sub][1][pos])     # addItem(sub:fileName, filepath)
+
+        self.btnAddNew.setEnabled(False)
     # ----------------------------------------------------------------------------------------------------------------------- addAllFiles() ---------
     def addAllFiles(self):
         """
         """
         pass
-   # ----------------------------------------------------------------------------------------------------------------------- closeEvent() ----------
+   # ----------------------------------------------------------------------------------------------------------------------- closeEvent() -----------
     def closeEvent(self, event):
         """  Ask for confirmation before closing, if required.
 

@@ -81,23 +81,15 @@ class FileStore():
         else:
             raise myExceptions.LibraryError
     #---------------------------------------------------------------------------------------------- getItem(self, key) -----------------
-    def setProcessed(self, key):
-        """  Mark item as processed.
-        """
-        if self.hasKey(key):
-            self.fileStore[key][0] = True
-        else:
-            raise myExceptions.LibraryError
-    #---------------------------------------------------------------------------------------------- getItem(self, key) -----------------
     def delItem(self, key):
         """  Deletes item at position key from the library.
         """
         try:
-            del self.library[key]
+            del self.fileStore[key]
         except (KeyError):
             raise myExceptions.LibraryError from None
     #---------------------------------------------------------------------------------------------- storeFiles(self) -----------------
-    def storeFiles(self):
+    def storedFiles(self):
         """  Returns a list of the fileStore keys i.e. a list of the files in the store.
         """
         return self.fileStore.keys()
@@ -125,57 +117,6 @@ class FileStore():
         except FileNotFoundError:
             self.parent.pteInfo.insertPlainText(f"ERROR :: Cannot find File Store file {self.fileName}.  Will use an empty Store. \n")
             self.fileStore = {}
-    #-------------------------------------------------------------------------------- check(self, mode, logger=None) -----------------------
-    def check(self, mode, logger=None):
-        """  Runs a database data integrity check.
-
-             mode is either "test" of "delete"
-             If a logger is passed in, then use it - else ignore.
-        """
-        self.timer.Start()        #  Start timer.
-        missing   = 0
-        removed   = 0
-
-        if logger:
-            logger.info("-" * 100)
-
-        self.parent.pteInfo.insertPlainText(f"Running database integrity check on {self.fileName} in {mode} mode. \n")
-        self.parent.pteInfo.insertPlainText(f"Loading {self.fileName}. \n")
-
-        if not self.fileStore:
-            try:
-                self.load()
-            except FileNotFoundError:
-                raise myExceptions.LibraryError from None
-
-        no_files = self.noOfItems
-        self.parent.pteInfo.insertPlainText(f"File Store has {no_files} files. \n")
-
-        for filePath in self.fileStore.copy():  # iterate over a copy, gets around the error dictionary changed size during iteration
-            path, month, year, fileDate = self.getItem(filePath)
-
-            if not filePath.exists():
-                if mode == "delete":
-                    self.delItem(filePath)
-                    print(f"Deleting {filePath}")
-                    removed += 1
-                else:
-                    missing += 1
-                    print(f"File does not exist {filePath}")
-
-        timeStop = self.timer.Stop      #  Stop timer.
-
-        if removed:
-            self.parent.pteInfo.insertPlainText(f"Saving {self.fileName}.\n")
-            self.save()
-            self.parent.pteInfo.insertPlainText(f"Completed  :: {timeStop} and removed {removed} entries from database. \n")
-            no_songs = self.noOfItems
-            self.parent.pteInfo.insertPlainText(f"File Store has now {no_songs} files. \n")
-        else:
-            if missing:
-                self.parent.pteInfo.insertPlainText(f"Completed  :: {timeStop} and found {missing} missing files. \n")
-            else:
-                self.parent.pteInfo.insertPlainText(f"Completed  :: {timeStop} and database looks good. \n")
     #-------------------------------------------------------------------------------- zap(self) ------------
     def zap(self):
         self.parent.pteInfo.insertPlainText(f" Deleting File Store {self.fileName}. \n")
