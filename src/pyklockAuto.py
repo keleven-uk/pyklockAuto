@@ -120,7 +120,7 @@ class mainWindow(QMainWindow):
         self.btnAddNew.clicked.connect(self.addNewFiles)
         self.btnAddNew.setEnabled(False)
         self.btnAddAll.clicked.connect(self.addAllFiles)
-        self.btnAddAll.setEnabled(False)
+        self.btnAddAll.setEnabled(True)
         btnClose.clicked.connect(self.close)
 
         ButtonLayout.addWidget(self.btnAddNew)
@@ -238,7 +238,7 @@ class mainWindow(QMainWindow):
                     self.pteInfo.insertPlainText(f"ERROR - {filePath}  deleted from File Store \n")
     # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ---------
     def addNewFiles(self):
-        """
+        """  Adds any new files to the filestore.
         """
         sub= f"{self.cbData.currentText()}"
         for pos, item in enumerate(self.lwFileList.findItems("*", Qt.MatchFlag.MatchWildcard)):
@@ -252,9 +252,11 @@ class mainWindow(QMainWindow):
         self.btnAddNew.setEnabled(False)
     # ----------------------------------------------------------------------------------------------------------------------- addAllFiles() ---------
     def addAllFiles(self):
+        """  Adds all files to the file store after first clearing the filestore.
         """
-        """
-        pass
+        self.fStore.zap()
+        self.lwFileList.clear()
+        self.BuildFileLists()
    # ----------------------------------------------------------------------------------------------------------------------- closeEvent() -----------
     def closeEvent(self, event):
         """  Ask for confirmation before closing, if required.

@@ -27,6 +27,8 @@
 
 import pickle
 
+import pymsgbox
+
 import src.timer as timer
 import src.projectPaths as pp
 import src.Exceptions as myExceptions
@@ -119,10 +121,13 @@ class FileStore():
             self.fileStore = {}
     #-------------------------------------------------------------------------------- zap(self) ------------
     def zap(self):
-        self.parent.pteInfo.insertPlainText(f" Deleting File Store {self.fileName}. \n")
+        response = pymsgbox.confirm(text="""Are you sure you want to clear the File stores \
+                                            You will need to build again.""", title="Warning", buttons=["OK", "Cancel"])
 
-        try:
-            self.fileName.unlink()
-        except FileNotFoundError:
-            self.parent.pteInfo.insertPlainText(f" Error deleting {self.fileName} \n")
+        if response == "OK":
+            self.parent.pteInfo.insertPlainText(f" Deleting File Store {self.fileName}. \n")
 
+            try:
+                self.fileName.unlink()
+            except FileNotFoundError:
+                self.parent.pteInfo.insertPlainText(f" Error deleting {self.fileName} \n")

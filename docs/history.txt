@@ -27,6 +27,14 @@ The main program will collated this dat and display the information from either 
 The agents will come shortly.
 
 
+V2026.7   [28 May 2026]
+
+	Implemented the Add All Files - Always available.
+		The existing file store is deleted.
+		The list view is cleared.
+		The file store is re-loaded and the list view is then re-populated
+
+
 V2026.6   [27 May 2026]
 
 	Implemented the Add New Files - only enabled if new file exist.
