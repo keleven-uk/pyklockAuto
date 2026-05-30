@@ -21,10 +21,17 @@
 pyklockAuto will [eventually] contain a number of agents that will poll a number of sensors attached to a vehicle [motorbike].
 The sensors will primarily monitor gps data and log position - but more may be added.
 
-The main program will collated this dat and display the information from either one journey or multiple journeys.
+The main program will collated this data and display the information from either one journey or multiple journeys.
     The main display is probably on a map.
 
 The agents will come shortly.
+
+
+V2026.8   [30 May 2026]
+
+	If a filename is selected in the file list, an info window pops up.
+		the info window displays date, distance, duration, average speed and elevation gain of the journey.
+		The information is determined by a file gpxParser, which was generated using AI, by Google Antigravity.
 
 
 V2026.7   [28 May 2026]

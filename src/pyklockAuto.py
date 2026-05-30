@@ -22,8 +22,12 @@
 # -*- coding: utf-8 -*-
 
 import time
+import textwrap
 
 from pathlib import Path
+
+from pyqttoast import Toast, ToastPreset
+
 
 from PyQt6.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout, QMessageBox, QLabel,
                              QPushButton, QFrame, QGroupBox, QListWidget, QPlainTextEdit, QComboBox)
@@ -34,6 +38,7 @@ import src.classes.menu as mu
 import src.classes.fileStore as fs
 
 import src.utils.autoUtils as utils     
+import src.utils.gpxParser as gpxParser
 
 from src.projectPaths import DATA_PATH
 
@@ -101,6 +106,8 @@ class mainWindow(QMainWindow):
         self.cbData.currentTextChanged.connect(self.changeDataPath)
         self.pteInfo = QPlainTextEdit("", self)
         self.lwFileList = QListWidget()
+        self.lwFileList.currentItemChanged.connect(self.showInfo)
+        self.lwFileList.setMouseTracking(True)
 
         self.cbData.addItems(self.subDirectories)
 
@@ -257,6 +264,36 @@ class mainWindow(QMainWindow):
         self.fStore.zap()
         self.lwFileList.clear()
         self.BuildFileLists()
+    # ----------------------------------------------------------------------------------------------------------------------- addAllFiles() ---------
+    def showInfo(self, item):
+
+        toast = None
+
+        toast = Toast(self)
+        toast.setDuration(0) 
+        toast.applyPreset(ToastPreset.INFORMATION_DARK)
+        toast.setPositionRelativeToWidget(self.lwFileList)
+        toast.setMinimumHeight(80)
+        toast.setTitle(item.text())
+
+        filename = item.text()
+        sub      = f"{self.cbData.currentText()}"
+        pos      = self.subDirFiles[sub][0].index(filename)
+        filepath = self.subDirFiles[sub][1][pos]
+        stats    = gpxParser.parse_gpx_file(filepath)
+
+        info = textwrap.dedent(f"""\
+            Date:                   {stats['date']}
+            Distance:             {stats['distance_miles']:.2f} miles
+            Duration:             {stats['duration_str']}
+            Average Speed:  {stats['avg_speed_mph']:.2f} mph
+            Elevation Gain:   {stats['ele_gain_ft']:.1f} fee
+            """)
+        toast.setText(info)
+        print(info)
+
+        toast.show()
+
    # ----------------------------------------------------------------------------------------------------------------------- closeEvent() -----------
     def closeEvent(self, event):
         """  Ask for confirmation before closing, if required.

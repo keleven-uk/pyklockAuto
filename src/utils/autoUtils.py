@@ -1,7 +1,7 @@
 ###############################################################################################################
-#    stubUtils   Copyright (C) <2026>  <Kevin Scott>                                                          #
+#    autoUtils   Copyright (C) <2026>  <Kevin Scott>                                                          #
 #                                                                                                             #
-#    Contains utility functions for pyStub_PyQt.                                                              #
+#    Contains utility functions for pyKlockAuto.                                                              #
 #                                                                                                             #
 #                                                                                                             #
 ###############################################################################################################
