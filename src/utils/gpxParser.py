@@ -5,6 +5,8 @@
 #                                                                                                             #
 #    This file was generated using AI, by Google Antigravity.                                                 #
 #                                                                                                             #
+#    21 May 2026 - Added top speed, also by AI.                                                               #
+#                                                                                                             #
 ###############################################################################################################
 #                                                                                                             #
 #    This program is free software: you can redistribute it and/or modify it under the terms of the           #
@@ -63,7 +65,8 @@ def parse_gpx_file(file_path):
     trackpoints = []
     total_dist = 0.0
     ele_gain = 0.0
-    last_lat, last_lon, last_ele = None, None, None
+    max_speed = 0.0
+    last_lat, last_lon, last_ele, last_time = None, None, None, None
     start_time, end_time = None, None
 
     for pt in pts:
@@ -98,13 +101,23 @@ def parse_gpx_file(file_path):
         trackpoints.append((lat, lon))
 
         if last_lat is not None:
-            total_dist += haversine(last_lat, last_lon, lat, lon)
+            dist = haversine(last_lat, last_lon, lat, lon)
+            total_dist += dist
             if ele is not None and last_ele is not None:
                 diff = ele - last_ele
                 if diff > 0:
                     ele_gain += diff
+            if last_time is not None and pt_time is not None:
+                dt = (pt_time - last_time).total_seconds()
+                if dt > 0:
+                    speed = dist / (dt / 3600.0)
+                    # Filter out unrealistic GPS speed spikes (e.g. > 250 km/h)
+                    if speed > max_speed and speed < 250.0:
+                        max_speed = speed
 
         last_lat, last_lon, last_ele = lat, lon, ele
+        if pt_time is not None:
+            last_time = pt_time
 
     # Calculate stats
     duration_secs = (end_time - start_time).total_seconds() if start_time and end_time else 0
@@ -123,6 +136,8 @@ def parse_gpx_file(file_path):
         "duration_str": duration_str,
         "avg_speed_kmh": avg_speed,
         "avg_speed_mph": avg_speed * 0.621371,
+        "max_speed_kmh": max_speed,
+        "max_speed_mph": max_speed * 0.621371,
         "ele_gain_m": ele_gain,
         "ele_gain_ft": ele_gain * 3.28084
     }
@@ -209,6 +224,10 @@ def generate_map_html(data, output_path):
     <div class="info-row">
         <span class="info-label">Avg Speed:</span>
         <span class="info-value">{data["avg_speed_kmh"]:.2f} km/h ({data["avg_speed_mph"]:.2f} mph)</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Top Speed:</span>
+        <span class="info-value">{data["max_speed_kmh"]:.2f} km/h ({data["max_speed_mph"]:.2f} mph)</span>
     </div>
     <div class="info-row">
         <span class="info-label">Elevation Gain:</span>

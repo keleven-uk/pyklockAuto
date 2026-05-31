@@ -266,6 +266,12 @@ class mainWindow(QMainWindow):
         self.BuildFileLists()
     # ----------------------------------------------------------------------------------------------------------------------- addAllFiles() ---------
     def showInfo(self, item):
+        """  Displays an info window when a journey is selected on the list.
+
+            gpxParser.parse_gpx_file(filepath) was generated using AI, by Google Antigravity.  
+        """
+        if item == None:
+            return
 
         toast = None
 
@@ -287,13 +293,12 @@ class mainWindow(QMainWindow):
             Distance:             {stats['distance_miles']:.2f} miles
             Duration:             {stats['duration_str']}
             Average Speed:  {stats['avg_speed_mph']:.2f} mph
+            Top Speed:         {stats['max_speed_mph']:.2f} mph
             Elevation Gain:   {stats['ele_gain_ft']:.1f} fee
             """)
         toast.setText(info)
-        print(info)
 
         toast.show()
-
    # ----------------------------------------------------------------------------------------------------------------------- closeEvent() -----------
     def closeEvent(self, event):
         """  Ask for confirmation before closing, if required.
