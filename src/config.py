@@ -171,7 +171,7 @@ class Config():
         written = strNow.strftime("%A %d %B %Y  %H:%M:%S")
         config  = dict()
 
-        config["INFO"] = {"myVERSION": "2026.9",
+        config["INFO"] = {"myVERSION": "2026.10",
                           "myNAME"   : "pyklockAuto"}
 
         config["APPLICATION"] = {"x_pos"      : 100,

@@ -36,9 +36,11 @@ from PyQt6.QtGui     import QBrush, QColorConstants
 
 import src.classes.menu as mu
 import src.classes.fileStore as fs
+import src.classes.displayGPX as displayGPX
 
 import src.utils.autoUtils as utils     
 import src.utils.gpxParser as gpxParser
+import src.utils.dataFrameUtils as dfUtils
 
 from src.projectPaths import DATA_PATH
 
@@ -60,6 +62,9 @@ class mainWindow(QMainWindow):
         self.myMenu = self.menu.buildMenu()
 
         self.fStore         = fs.FileStore(self.logger, self)   #  Create the file store.
+        self.displayGPX     = displayGPX.displayGPX()
+        self.dfUtils        = dfUtils.dfUtils()
+
         self.subDirectories = utils.getDataDirectories()        #  A list of the sub directories under data.
         self.subDirFiles    = {}                                #  A dictionary, each entry will be a list of files for that sub directory.
 
@@ -123,15 +128,20 @@ class mainWindow(QMainWindow):
 
         self.btnAddNew = QPushButton(text="Add New Files", parent=self)
         self.btnAddAll = QPushButton(text="Add All Files", parent=self)
+        self.btnDisplay = QPushButton(text="Display Route", parent=self)
         btnClose  = QPushButton(text="Close", parent=self)
+
         self.btnAddNew.clicked.connect(self.addNewFiles)
         self.btnAddNew.setEnabled(False)
         self.btnAddAll.clicked.connect(self.addAllFiles)
         self.btnAddAll.setEnabled(True)
+        self.btnDisplay.clicked.connect(self.displayFile)
+        self.btnDisplay.setEnabled(False)
         btnClose.clicked.connect(self.close)
 
         ButtonLayout.addWidget(self.btnAddNew)
         ButtonLayout.addWidget(self.btnAddAll)
+        ButtonLayout.addWidget(self.btnDisplay)
         ButtonLayout.addWidget(btnClose)
 
         centralLayout.addWidget(mainGroup)
@@ -189,6 +199,24 @@ class mainWindow(QMainWindow):
 
         self.lwFileList.addItems(self.subDirFiles["data_350"][0])
         self.checkFileList("data_350")
+    # ----------------------------------------------------------------------------------------------------------------------- displayFile() ---------
+    def displayFile(self):
+        """  Display the gpx file as geo map in the browser.
+           
+             self.dfUtils.gpx2df_elevation returns a pandas dataframe.
+               But, an error in returned as a string.
+        """
+        fileName = self.lwFileList.currentItem().text()
+        sub      = f"{self.cbData.currentText()}"
+        pos      = self.subDirFiles[sub][0].index(fileName)
+        filepath = self.subDirFiles[sub][1][pos]
+
+        df = self.dfUtils.gpx2df_elevation(filepath)
+
+        if isinstance(df, str):
+            self.pteInfo.insertPlainText(f"{df}.\n")
+
+        self.displayGPX.displayGPX_elevation(df, self.lwFileList.currentItem().text())
     # ----------------------------------------------------------------------------------------------------------------------- changeDataPath() ------
     def changeDataPath(self):
         """  When the desired data is changed via the combo box, display the required files in the file list.
@@ -270,13 +298,11 @@ class mainWindow(QMainWindow):
 
             gpxParser.parse_gpx_file(filepath) was generated using AI, by Google Antigravity.  
         """
-        if item == None:
+        if item is None:
             return
 
-        toast = None
-
         toast = Toast(self)
-        toast.setDuration(0) 
+        toast.setDuration(5000) 
         toast.applyPreset(ToastPreset.INFORMATION_DARK)
         toast.setPositionRelativeToWidget(self.lwFileList)
         toast.setMinimumHeight(80)
@@ -299,6 +325,8 @@ class mainWindow(QMainWindow):
         toast.setText(info)
 
         toast.show()
+
+        self.btnDisplay.setEnabled(True)
    # ----------------------------------------------------------------------------------------------------------------------- closeEvent() -----------
     def closeEvent(self, event):
         """  Ask for confirmation before closing, if required.

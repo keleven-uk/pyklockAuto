@@ -27,6 +27,16 @@ The main program will collated this data and display the information from either
 The agents will come shortly.
 
 
+V2026.10   [12 June 2026]
+
+	Added a display Route button.
+		This display the selected gpx file as a geo map in a browser using ploty.express.
+			The geo map uses a colour map determined by elevation.
+		The gpx file is first converted into a Pandas dataframe and then passes to ploty.
+		The conversion is handled by utils.dataFrameUtils.py.
+		The display is handled by classes.displayGPX.py.
+
+
 V2026.9   [31 May 2026]
 
 	Added top speed to gpxParser - also by AI.

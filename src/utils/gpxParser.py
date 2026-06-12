@@ -1,7 +1,7 @@
 ###############################################################################################################
 #    gpxParser.py   Copyright (C) <2026>  <Kevin Scott>                                                       #
 #                                                                                                             #
-#    A helper utility to parse GPX xml files and generate Leaflet HTML maps for journey routes.               #
+#    A helper utility to parse GPX xml files and provide route details.               #
 #                                                                                                             #
 #    This file was generated using AI, by Google Antigravity.                                                 #
 #                                                                                                             #
@@ -25,7 +25,6 @@
 import xml.etree.ElementTree as ET
 import math
 from datetime import datetime
-import json
 from pathlib import Path
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -141,133 +140,3 @@ def parse_gpx_file(file_path):
         "ele_gain_m": ele_gain,
         "ele_gain_ft": ele_gain * 3.28084
     }
-
-def generate_map_html(data, output_path):
-    """ Generate leaflet.js map html file for the track.
-    """
-    points_json = json.dumps(data["points"])
-    
-    html = f"""<!DOCTYPE html>
-<html>
-<head>
-    <title>pyKlockAuto - Map of {data["filename"]}</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        html, body, #map {{
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }}
-        .info-panel {{
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(30, 30, 30, 0.85);
-            backdrop-filter: blur(10px);
-            color: #fff;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 320px;
-        }}
-        .info-panel h2 {{
-            margin: 0 0 10px 0;
-            font-size: 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 5px;
-            color: #4CAF50;
-        }}
-        .info-row {{
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            font-size: 14px;
-        }}
-        .info-label {{
-            color: #aaa;
-            margin-right: 15px;
-        }}
-        .info-value {{
-            font-weight: bold;
-            text-align: right;
-        }}
-    </style>
-</head>
-<body>
-
-<div id="map"></div>
-
-<div class="info-panel">
-    <h2>Journey Summary</h2>
-    <div class="info-row">
-        <span class="info-label">File:</span>
-        <span class="info-value">{data["filename"]}</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Date:</span>
-        <span class="info-value">{data["date"]}</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Distance:</span>
-        <span class="info-value">{data["distance_km"]:.2f} km ({data["distance_miles"]:.2f} mi)</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Duration:</span>
-        <span class="info-value">{data["duration_str"]}</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Avg Speed:</span>
-        <span class="info-value">{data["avg_speed_kmh"]:.2f} km/h ({data["avg_speed_mph"]:.2f} mph)</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Top Speed:</span>
-        <span class="info-value">{data["max_speed_kmh"]:.2f} km/h ({data["max_speed_mph"]:.2f} mph)</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Elevation Gain:</span>
-        <span class="info-value">{data["ele_gain_m"]:.1f} m ({data["ele_gain_ft"]:.1f} ft)</span>
-    </div>
-</div>
-
-<script>
-    const map = L.map('map');
-
-    L.tileLayer('https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
-    }}).addTo(map);
-
-    const points = {points_json};
-
-    if (points.length > 0) {{
-        const polyline = L.polyline(points, {{
-            color: '#00e676',
-            weight: 5,
-            opacity: 0.8,
-            lineJoin: 'round'
-        }}).addTo(map);
-
-        map.fitBounds(polyline.getBounds());
-
-        // Start Marker (Green)
-        L.marker(points[0]).addTo(map)
-            .bindPopup('<b>Start Position</b><br>' + points[0][0] + ', ' + points[0][1]);
-
-        // End Marker (Red)
-        L.marker(points[points.length - 1]).addTo(map)
-            .bindPopup('<b>End Position</b><br>' + points[points.length - 1][0] + ', ' + points[points.length - 1][1]);
-    }}
-</script>
-
-</body>
-</html>
-"""
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html)
