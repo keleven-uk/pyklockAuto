@@ -70,7 +70,7 @@ class FileStore():
     def addItem(self, key, data):
         """  Adds to the fileStore 
              The key is the sub directory:file name.
-             The Data is the file path.
+             The Data[0] is the file path.
         """
         self.fileStore[key] = data
     #---------------------------------------------------------------------------------------------- getItem(self, key) -----------------
@@ -116,10 +116,13 @@ class FileStore():
             with open(self.fileName, "rb") as pickle_file:
                 self.fileStore = pickle.load(pickle_file)
         except FileNotFoundError:
-            self.parent.pteInfo.insertPlainText(f"ERROR :: Cannot find File Store file {self.fileName}.  Will use an empty Store. \n")
+            self.parent.pteInfo.insertPlainText(f"ERROR :: Cannot find File Store file {self.fileName}.\n  Will use an empty Store. \n")
             self.fileStore = {}
     #-------------------------------------------------------------------------------- zap(self) ------------
     def zap(self):
+        """  Clears the file store and deletes the physical file.
+             Prompts the user first.
+        """
         response = pymsgbox.confirm(text="""Are you sure you want to clear the File stores \
                                             You will need to build again.""", title="Warning", buttons=["OK", "Cancel"])
 
@@ -128,5 +131,6 @@ class FileStore():
 
             try:
                 self.fileName.unlink()
+                self.fileStore = {}
             except FileNotFoundError:
                 self.parent.pteInfo.insertPlainText(f" Error deleting {self.fileName} \n")

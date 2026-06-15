@@ -135,6 +135,7 @@ $RECYCLE.BIN/
 *.log.*
 
 # local files
+src/srtm
 cspell.json
 pyKlock3.code-workspace
 ruff.toml

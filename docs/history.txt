@@ -27,6 +27,16 @@ The main program will collated this data and display the information from either
 The agents will come shortly.
 
 
+V2026.11   [15 June 2026]
+
+	Added the ability to correct the elevation data on a gpx.file
+	  This is achieved using the strm database - see https://github.com/tkrajina/srtm.py
+	  This is applied to any new files when added to the file store.
+
+	Corrected a bug in the filestore class.  
+		When the file store is zapped clear the file store as well as deleting the physical file.
+
+
 V2026.10   [12 June 2026]
 
 	Added a display Route button.

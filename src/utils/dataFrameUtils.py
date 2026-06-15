@@ -35,11 +35,9 @@ class dfUtils():
             with open(gpxFileName, "r") as gpx_file:
                 gpx = gpxpy.parse(gpx_file)
         except FileNotFoundError:
-            print(f"The file {gpxFileName } was not found.")
-            return(f"The file {gpxFileName } was not found.")
+            return(f"The file {gpxFileName} was not found.")
         except IOError:
-            print(f"An error occurred while reading the file {gpxFileName }.")
-            return(f"An error occurred while reading the file {gpxFileName }.")
+            return(f"An error occurred while reading the file {gpxFileName}.")
 
         route_data = []                         #  empty list
         for track in gpx.tracks:
@@ -53,5 +51,7 @@ class dfUtils():
                     })
 
         df = pd.DataFrame(route_data)
+
+        print(df.info())
 
         return(df)

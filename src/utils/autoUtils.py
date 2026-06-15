@@ -25,7 +25,12 @@ import win32api
 import win32con
 import ctypes
 
+import gpxpy
+
+import src.srtm as srtm
+
 from src.projectPaths import DATA_PATH
+
  # ----------------------------------------------------------------------------------------------------------------------- getState() ---------------
 def getState():
     """  Checks the current state of Caps Lock, Insert, Scroll Lock & Num Lock.
@@ -146,3 +151,25 @@ def listFiles(dirPath, verbose):
                 print(f"Found data file :: {entry.name}")
 
     return(dataFiles, dataPaths)
+# ----------------------------------------------------------------------------------------------------------------------- correctElevation() --------
+def correctElevation(fileName):
+    """  Uses the srtm database to correct the elevation database.
+
+         Uses srtm.py @ https://github.com/tkrajina/srtm.py
+    """
+    elevation_data = srtm.get_data()                    #  Uses srtm.py @ https://github.com/tkrajina/srtm.py
+
+    try:
+        with open(fileName, "r") as gpx_file:
+            gpx = gpxpy.parse(gpx_file)
+    except FileNotFoundError:
+        return(f"The file {fileName} was not found.")
+    except IOError:
+        return(f"An error occurred while reading the file {fileName}.")
+
+    elevation_data.add_elevations(gpx, smooth=True)     #  Correct the elevation data.
+
+    with open(fileName, "w") as f:                      #  Re-write the correct file back using the original filename.
+        f.write(gpx.to_xml())                           #  Should there be checks here.
+
+

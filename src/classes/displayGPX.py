@@ -29,7 +29,7 @@ class displayGPX():
 
     def displayGPX_elevation(self, df, title):
         """  This method uses elevation as the colour map.
-             The map will be displayed on the active browser, if not open - will open a browser.
+             The map will be displayed in the active browser, if not open - will open a browser.
         """
         fig_map = px.line_map(
             df, 
