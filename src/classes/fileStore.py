@@ -116,7 +116,7 @@ class FileStore():
             with open(self.fileName, "rb") as pickle_file:
                 self.fileStore = pickle.load(pickle_file)
         except FileNotFoundError:
-            self.parent.pteInfo.insertPlainText(f"ERROR :: Cannot find File Store file {self.fileName}.\n  Will use an empty Store. \n")
+            self.parent.insertInfo(f"ERROR :: Cannot find File Store file {self.fileName}.\n  Will use an empty Store.")
             self.fileStore = {}
     #-------------------------------------------------------------------------------- zap(self) ------------
     def zap(self):
@@ -127,10 +127,10 @@ class FileStore():
                                             You will need to build again.""", title="Warning", buttons=["OK", "Cancel"])
 
         if response == "OK":
-            self.parent.pteInfo.insertPlainText(f" Deleting File Store {self.fileName}. \n")
+            self.parent.insertInfo(f" Deleting File Store {self.fileName}.")
 
             try:
                 self.fileName.unlink()
                 self.fileStore = {}
             except FileNotFoundError:
-                self.parent.pteInfo.insertPlainText(f" Error deleting {self.fileName} \n")
+                self.parent.insertInfo(f" Error deleting {self.fileName}.")

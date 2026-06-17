@@ -18,6 +18,7 @@
 #                                                                                                             #
 ###############################################################################################################
 
+import numpy as np
 import plotly.express as px
 
 class displayGPX():
@@ -26,6 +27,29 @@ class displayGPX():
 
     def __init__(self):
         pass
+
+    def _auto_zoom_map(self, df, lat_col, lon_col):
+        """  Calculates the center and approximate zoom level for tile maps.
+        """
+        lats = df[lat_col]
+        lons = df[lon_col]
+        
+        # 1. Find the geographic center
+        center = {"lat": lats.mean(), "lon": lons.mean()}
+        
+        # 2. Calculate the degree span
+        lat_range = lats.max() - lats.min()
+        lon_range = lons.max() - lons.min()
+        max_range = max(lat_range, lon_range)
+        
+        # 3. Logarithmic conversion from degrees to map zoom levels
+        if max_range == 0:
+            zoom = 13  # Default zoom if there is only one point
+        else:
+            # Tweak the subtraction constant (- 1.2) to make the padding tighter or looser
+            zoom = np.log2(360 / max_range) 
+            
+        return zoom, center
 
     def displayGPX_elevation(self, df, title):
         """  This method uses elevation as the colour map.
@@ -40,6 +64,15 @@ class displayGPX():
             title     = title
         )
 
+        # Calculate and apply the automated bounds
+        zoom_level, center_coords = self._auto_zoom_map(df, "latitude", "longitude")
+
+        fig_map.update_layout(
+            map=dict(
+                center=center_coords, 
+                zoom=zoom_level
+            )
+        )
         fig_map.update_traces(
             mode="markers",        # Show both the line and the points
             marker=dict(

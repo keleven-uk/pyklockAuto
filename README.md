@@ -14,5 +14,5 @@ To install dependencies pip install -r requirements.txt
 For changes see history.txt
 
 
-Kevin Scott (C) 2026 :: pyStub_PyQt V2026.11
+Kevin Scott (C) 2026 :: pyStub_PyQt V2026.12
 

@@ -72,9 +72,9 @@ class mainWindow(QMainWindow):
         self.buildStatusBar()
         self.setMenuBar(self.myMenu)
 
-        self.pteInfo.insertPlainText(f"{self.config.NAME} {self.config.VERSION}.\n")
+        self.insertInfo(f"{self.config.NAME} {self.config.VERSION}.")
 
-        self.fStore         = fs.FileStore(self.logger, self)   #  Create the file store.
+        self.fStore = fs.FileStore(self.logger, self)   #  Create the file store.
 
         self.updateTime()
 
@@ -201,7 +201,7 @@ class mainWindow(QMainWindow):
         """
         for sub in self.subDirectories:
             sb = f"{DATA_PATH}/{sub}"
-            self.pteInfo.insertPlainText(f"Building file list for  {sub}.\n")
+            self.insertInfo(f"Building file list for  {sub}.")
             self.subDirFiles[sub] = utils.listFiles(sb, False)                  #  Set to True to print file names to console.
 
         self.lwFileList.addItems(self.subDirFiles["data_350"][0])
@@ -221,7 +221,7 @@ class mainWindow(QMainWindow):
         df = self.dfUtils.gpx2df_elevation(filepath)
 
         if isinstance(df, str):
-            self.pteInfo.insertPlainText(f"{df}.\n")
+            self.insertInfo(f"{df}.")
 
         self.displayGPX.displayGPX_elevation(df, self.lwFileList.currentItem().text())
     # ----------------------------------------------------------------------------------------------------------------------- changeDataPath() ------
@@ -258,7 +258,7 @@ class mainWindow(QMainWindow):
         else:
             self.btnAddNew.setEnabled(False)
 
-        self.pteInfo.insertPlainText(f"Displaying files for {sub} - {self.lwFileList.count()} files \n")
+        self.insertInfo(f"Displaying files for {sub} - {self.lwFileList.count()} files.")
 
         self.reverseCheck(sub)
      # ----------------------------------------------------------------------------------------------------------------------- reverseCheck() -------
@@ -266,18 +266,18 @@ class mainWindow(QMainWindow):
         """  Performs a reverse file check.
              For each item in the filestore, check that the file actually exists.
         """
-        self.pteInfo.insertPlainText(f"Reverse checking files for {sub} \n")
+        self.insertInfo(f"Reverse checking files for {sub}.")
 
         fileList = self.fStore.storedFiles()
         copyList = list(fileList)
 
         for key in copyList:                    # iterate over a copy, gets around the error dictionary changed size during iteration
             if key.startswith(sub):
-                filePath = Path(self.fStore.getItem(key)[0])
+                filePath = Path(self.fStore.getItem(key))
                 if not filePath.exists():
-                    self.pteInfo.insertPlainText(f"ERROR - {filePath}  does not exist \n")
+                    self.insertInfo(f"ERROR - {filePath}  does not exist.")
                     self.fStore.delItem(key)
-                    self.pteInfo.insertPlainText(f"ERROR - {filePath}  deleted from File Store \n")
+                    self.insertInfo(f"ERROR - {filePath}  deleted from File Store.")
     # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ---------
     def addNewFiles(self):
         """  Adds any new files to the filestore.
@@ -287,20 +287,22 @@ class mainWindow(QMainWindow):
             fname = item.text()
             key   = f"{sub}:{fname}"  
             if not self.fStore.hasKey(key):                                   #  key = sub:fileName
-                self.pteInfo.insertPlainText(f"Adding {fname} \n")
-                item.setForeground(QBrush(QColorConstants.Green))             #              key     :  data
-                self.fStore.addItem(key, [self.subDirFiles[sub][1][pos]])     # addItem(sub:fileName, filepath)
+                self.insertInfo(f"Adding {fname}.")
+                item.setForeground(QBrush(QColorConstants.Green))     
+                filePath = self.subDirFiles[sub][1][pos]                      #  key     :  data
+                self.fStore.addItem(key, filePath)                            # addItem(sub:fileName, filepath)
 
-                fileName = key   = f"{self.dataPath}/{fname}"
-                self.pteInfo.insertPlainText(f"Correcting elevation {fileName} \n")
-                error = utils.correctElevation(fileName)
+                self.insertInfo(f"Correcting elevation {fname}.")
+
+                error = utils.correctElevation(filePath)
 
                 if error != None:
-                    self.pteInfo.insertPlainText(f"{error} \n")
-
-                self.cursor.movePosition(QTextCursor.End);
+                    self.insertInfo(f"{error} \n")
+                else:
+                    self.insertInfo(f"Correcting elevation OK.")
 
         self.btnAddNew.setEnabled(False)
+        self.fStore.save()                                                     #  Save the file store.
     # ----------------------------------------------------------------------------------------------------------------------- addAllFiles() ---------
     def clearAllFiles(self):
         """  Clears the filestore and file list.
@@ -361,6 +363,13 @@ class mainWindow(QMainWindow):
             self.endBit()
             event.accept()          #  Close the app.
             self.close()
+    # ----------------------------------------------------------------------------------------------------------------------- insertInfo() ----------
+    def insertInfo(self, message):
+        """  Insert the message into the info window [QListWidget], appending an end of line.
+             Then moves the cursor to the end, displaying the last line.
+        """
+        self.pteInfo.insertPlainText(f"{message} \n")
+        self.pteInfo.moveCursor(QTextCursor.End)
     # ----------------------------------------------------------------------------------------------------------------------- endBit() --------------
     def endBit(self):
         """  Save config file, stop the timer and print Goodbye.

@@ -52,6 +52,4 @@ class dfUtils():
 
         df = pd.DataFrame(route_data)
 
-        print(df.info())
-
         return(df)

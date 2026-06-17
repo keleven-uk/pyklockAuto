@@ -27,6 +27,12 @@ The main program will collated this data and display the information from either
 The agents will come shortly.
 
 
+V2026.12   [17 June 2026]
+
+	Amended the add to the list box to always show the last line.
+	Attempted to give the map display an auto zoom, so that the route fills more the the display.
+
+
 V2026.11   [15 June 2026]
 
 	Added the ability to correct the elevation data on a gpx.file
