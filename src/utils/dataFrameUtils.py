@@ -53,3 +53,33 @@ class dfUtils():
         df = pd.DataFrame(route_data)
 
         return(df)
+
+    def gpx2df_visit(self, gpxFileName):
+        """  Converts a gpx file to a Pandas dataframe.
+
+             But, with an extra column - which will count the number occurrences of that spot.
+                Initially set to 1.
+        """
+        try:
+            with open(gpxFileName, "r") as gpx_file:
+                gpx = gpxpy.parse(gpx_file)
+        except FileNotFoundError:
+            return(f"The file {gpxFileName} was not found.")
+        except IOError:
+            return(f"An error occurred while reading the file {gpxFileName}.")
+
+        route_data = []                         #  empty list
+        for track in gpx.tracks:
+            for segment in track.segments:
+                for point in segment.points:
+                    route_data.append({
+                        "latitude" : point.latitude,
+                        "longitude": point.longitude,
+                        "elevation": point.elevation,
+                        "time"     : point.time,
+                        "visit"    : "1"
+                    })
+
+        df = pd.DataFrame(route_data)
+
+        return(df)

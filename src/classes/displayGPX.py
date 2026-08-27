@@ -52,7 +52,8 @@ class displayGPX():
         return zoom, center
 
     def displayGPX_elevation(self, df, title):
-        """  This method uses elevation as the colour map.
+        """  Display a data frame containing geo locations as a map.
+             This method uses elevation as the colour map.
              The map will be displayed in the active browser, if not open - will open a browser.
         """
         fig_map = px.line_map(

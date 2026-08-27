@@ -6,8 +6,7 @@
 #      The key is made up of the file path [should be unique]                                                 #
 #      Data is an empty list for the moment.                                                                  #
 #                                                                                                             #
-#    Uses pickle or json to load and save the library.                                                        #
-#    The format is specified when the library is created.                                                     #
+#    Uses pickle  to load and save the library.                                                               #
 #                                                                                                             #
 ###############################################################################################################
 #                                                                                                             #
@@ -26,9 +25,6 @@
 
 import pickle
 
-import pymsgbox
-
-import src.timer as timer
 import src.projectPaths as pp
 import src.Exceptions as myExceptions
 
@@ -57,7 +53,6 @@ class FileStore():
         self.fileName = pp.DATA_PATH / "fileStore.pickle"
         self.logger   = logger
         self.parent   = parent
-        self.timer    = timer.Timer()                #  A timer class.
 
         self.__load()
 
@@ -123,14 +118,9 @@ class FileStore():
         """  Clears the file store and deletes the physical file.
              Prompts the user first.
         """
-        response = pymsgbox.confirm(text="""Are you sure you want to clear the File stores \
-                                            You will need to build again.""", title="Warning", buttons=["OK", "Cancel"])
-
-        if response == "OK":
-            self.parent.insertInfo(f" Deleting File Store {self.fileName}.")
-
-            try:
-                self.fileName.unlink()
-                self.fileStore = {}
-            except FileNotFoundError:
-                self.parent.insertInfo(f" Error deleting {self.fileName}.")
+        try:
+            self.fileName.unlink()
+            self.fileStore = {}
+            self.parent.insertInfo(f" Deleted {self.fileName}.")
+        except FileNotFoundError:
+            self.parent.insertInfo(f" Error deleting {self.fileName}.")

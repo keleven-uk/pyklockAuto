@@ -1,7 +1,7 @@
 ###############################################################################################################
 #    gpxParser.py   Copyright (C) <2026>  <Kevin Scott>                                                       #
 #                                                                                                             #
-#    A helper utility to parse GPX xml files and provide route details.               #
+#    A helper utility to parse GPX xml files and provide route details.                                       #
 #                                                                                                             #
 #    This file was generated using AI, by Google Antigravity.                                                 #
 #                                                                                                             #

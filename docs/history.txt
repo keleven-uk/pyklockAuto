@@ -27,6 +27,15 @@ The main program will collated this data and display the information from either
 The agents will come shortly.
 
 
+V2026.13   [27 August 2026]
+
+	When a new gpx file is added, as well as adding to the file store it is also added to a combined journey.
+		The combined journey is added to a combined data frame and currently saved as a pickle file.
+		This data frame will be save in a gpx form
+
+	Built with Python 3.14.7 and PyQt 6.11.2.
+		updated all modules and requirements.txt.
+
 V2026.12   [17 June 2026]
 
 	Amended the add to the list box to always show the last line.

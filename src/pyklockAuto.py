@@ -23,6 +23,7 @@
 
 import time
 import textwrap
+import pymsgbox
 
 from pathlib import Path
 
@@ -35,6 +36,7 @@ from PyQt6.QtCore    import Qt, QTimer, QDateTime
 from PyQt6.QtGui     import QBrush, QColorConstants, QTextCursor
 
 import src.classes.menu as mu
+import src.classes.dfStore as dfs
 import src.classes.fileStore as fs
 import src.classes.displayGPX as displayGPX
 
@@ -66,6 +68,7 @@ class mainWindow(QMainWindow):
 
         self.subDirectories = utils.getDataDirectories()        #  A list of the sub directories under data.
         self.subDirFiles    = {}                                #  A dictionary, each entry will be a list of files for that sub directory.
+        self.subDFFiles     = {}                                #  A dictionary, each entry will be a data frame for that sub directory.
 
         #  Build GUI
         self.buildGUI()
@@ -134,20 +137,20 @@ class mainWindow(QMainWindow):
         mainGroup.setLayout(mainLayout)
 
         self.btnAddNew = QPushButton(text="Add New Files", parent=self)
-        self.btnAddAll = QPushButton(text="Clear All Files", parent=self)
+        self.btnClearFiles = QPushButton(text="Clear All Files", parent=self)
         self.btnDisplay = QPushButton(text="Display Route", parent=self)
         btnClose  = QPushButton(text="Close", parent=self)
 
         self.btnAddNew.clicked.connect(self.addNewFiles)
         self.btnAddNew.setEnabled(False)
-        self.btnAddAll.clicked.connect(self.clearAllFiles)
-        self.btnAddAll.setEnabled(True)
+        self.btnClearFiles.clicked.connect(self.clearAllFiles)
+        self.btnClearFiles.setEnabled(True)
         self.btnDisplay.clicked.connect(self.displayFile)
         self.btnDisplay.setEnabled(False)
         btnClose.clicked.connect(self.close)
 
         ButtonLayout.addWidget(self.btnAddNew)
-        ButtonLayout.addWidget(self.btnAddAll)
+        ButtonLayout.addWidget(self.btnClearFiles)
         ButtonLayout.addWidget(self.btnDisplay)
         ButtonLayout.addWidget(btnClose)
 
@@ -202,7 +205,8 @@ class mainWindow(QMainWindow):
         for sub in self.subDirectories:
             sb = f"{DATA_PATH}/{sub}"
             self.insertInfo(f"Building file list for  {sub}.")
-            self.subDirFiles[sub] = utils.listFiles(sb, False)                  #  Set to True to print file names to console.
+            self.subDirFiles[sub] = utils.listFiles(sb, False)             #  Set to True to print file names to console.
+            self.subDFFiles[sub]  = dfs.dfStore(self.logger, sub, self)    #  Create the df store.  A pandas data frame to store cumulative routes.
 
         self.lwFileList.addItems(self.subDirFiles["data_350"][0])
         self.checkFileList("data_350")
@@ -220,10 +224,10 @@ class mainWindow(QMainWindow):
 
         df = self.dfUtils.gpx2df_elevation(filepath)
 
-        if isinstance(df, str):
+        if isinstance(df, str):             #  If return is a string, display the error message.
             self.insertInfo(f"{df}.")
-
-        self.displayGPX.displayGPX_elevation(df, self.lwFileList.currentItem().text())
+        else:
+            self.displayGPX.displayGPX_elevation(df, self.lwFileList.currentItem().text())
     # ----------------------------------------------------------------------------------------------------------------------- changeDataPath() ------
     def changeDataPath(self):
         """  When the desired data is changed via the combo box, display the required files in the file list.
@@ -253,7 +257,7 @@ class mainWindow(QMainWindow):
                 item.setForeground(QBrush(QColorConstants.Red)) 
                 newFiles = True
 
-        if newFiles:                        #  If new file are found, enable aff new File button.
+        if newFiles:                        #  If new file are found, enable add new File button.
             self.btnAddNew.setEnabled(True)
         else:
             self.btnAddNew.setEnabled(False)
@@ -281,8 +285,10 @@ class mainWindow(QMainWindow):
     # ----------------------------------------------------------------------------------------------------------------------- addNewFiles() ---------
     def addNewFiles(self):
         """  Adds any new files to the filestore.
+
+             Aldo add individual routes to the combined routes for the sub directory - August 2026.
         """
-        sub= f"{self.cbData.currentText()}"
+        sub = f"{self.cbData.currentText()}"
         for pos, item in enumerate(self.lwFileList.findItems("*", Qt.MatchFlag.MatchWildcard)):
             fname = item.text()
             key   = f"{sub}:{fname}"  
@@ -296,10 +302,15 @@ class mainWindow(QMainWindow):
 
                 error = utils.correctElevation(filePath)
 
-                if error != None:
+                if error is not None:
                     self.insertInfo(f"{error} \n")
+                    #  add the data frame here.
                 else:
-                    self.insertInfo(f"Correcting elevation OK.")
+                    self.insertInfo("Correcting elevation OK.")
+
+                    self.insertInfo("Adding to combined route for {sub}")
+                    df = self.dfUtils.gpx2df_visit(filePath)
+                    self.subDFFiles[sub].add(df)
 
         self.btnAddNew.setEnabled(False)
         self.fStore.save()                                                     #  Save the file store.
@@ -307,9 +318,18 @@ class mainWindow(QMainWindow):
     def clearAllFiles(self):
         """  Clears the filestore and file list.
         """
-        self.fStore.zap()
-        self.lwFileList.clear()
-        self.BuildFileLists()
+        response = pymsgbox.confirm(text="""Are you sure you want to clear the File stores \
+                                            You will need to build again.""", title="Warning", buttons=["OK", "Cancel"])
+
+        if response == "OK":
+            self.insertInfo(" Deleting File and combined Stores.")
+
+            self.fStore.zap()
+            self.lwFileList.clear()
+            self.BuildFileLists()
+
+            for sub in self.subDirectories:
+                self.subDFFiles[sub].zap()         #  clear the data frame stores.
     # ----------------------------------------------------------------------------------------------------------------------- addAllFiles() ---------
     def showInfo(self, item):
         """  Displays an info window when a journey is selected on the list.
@@ -380,6 +400,9 @@ class mainWindow(QMainWindow):
         self.fStore.save()          #  Save the file store.
         self.logger.info(f"  Ending {self.config.NAME} Version {self.config.VERSION} ")
         self.logger.info("=" * 100)
+
+        for sub in self.subDirectories:
+            self.subDFFiles[sub].save()         #  Save the data frame store.
     # ----------------------------------------------------------------------------------------------------------------------- saveConfig() ----------
     def saveConfig(self):
         """  Save stuff to the config file, in case any has changed.
