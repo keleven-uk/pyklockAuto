@@ -27,6 +27,13 @@ The main program will collated this data and display the information from either
 The agents will come shortly.
 
 
+V2026.15   [7 September 2026]
+
+	Created a branch - pandas  - to park the source at this point.
+		Using pandas seems to be little complex and over kill for my simple needs and skills.
+		Will explore other ways in the main branch.
+
+
 V2026.14   [7 September 2026]
 
 	Added a saveCPX method to the dfStore.
