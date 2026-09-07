@@ -27,6 +27,11 @@ The main program will collated this data and display the information from either
 The agents will come shortly.
 
 
+V2026.14   [7 September 2026]
+
+	Added a saveCPX method to the dfStore.
+
+
 V2026.13   [27 August 2026]
 
 	When a new gpx file is added, as well as adding to the file store it is also added to a combined journey.
@@ -57,7 +62,7 @@ V2026.10   [12 June 2026]
 	Added a display Route button.
 		This display the selected gpx file as a geo map in a browser using ploty.express.
 			The geo map uses a colour map determined by elevation.
-		The gpx file is first converted into a Pandas dataframe and then passes to ploty.
+		The gpx file is first converted into a Pandas data frame and then passes to ploty.
 		The conversion is handled by utils.dataFrameUtils.py.
 		The display is handled by classes.displayGPX.py.
 

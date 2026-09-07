@@ -308,9 +308,10 @@ class mainWindow(QMainWindow):
                 else:
                     self.insertInfo("Correcting elevation OK.")
 
-                    self.insertInfo("Adding to combined route for {sub}")
+                    self.insertInfo(f"Adding to combined route for {sub}")
                     df = self.dfUtils.gpx2df_visit(filePath)
-                    self.subDFFiles[sub].add(df)
+                    self.subDFFiles[sub].add(df)                               #  Add new file to combined.
+                    self.subDFFiles[sub].saveGPX()                             #  Save combined in gpx format.
 
         self.btnAddNew.setEnabled(False)
         self.fStore.save()                                                     #  Save the file store.
@@ -388,6 +389,7 @@ class mainWindow(QMainWindow):
         """  Insert the message into the info window [QListWidget], appending an end of line.
              Then moves the cursor to the end, displaying the last line.
         """
+        print(message)
         self.pteInfo.insertPlainText(f"{message} \n")
         self.pteInfo.moveCursor(QTextCursor.End)
     # ----------------------------------------------------------------------------------------------------------------------- endBit() --------------
@@ -397,12 +399,16 @@ class mainWindow(QMainWindow):
         self.Timer.stop()           #  Stop the time when the frame closes.
         self.Timer = None           #  Hopefully, stop any memory leaks - maybe only need close()
         self.saveConfig()           #  Save the config file.
+        self.insertInfo(" Saving file store.")
         self.fStore.save()          #  Save the file store.
         self.logger.info(f"  Ending {self.config.NAME} Version {self.config.VERSION} ")
         self.logger.info("=" * 100)
 
         for sub in self.subDirectories:
+            self.insertInfo(f" Saving data frame store for {sub}.")
             self.subDFFiles[sub].save()         #  Save the data frame store.
+            self.insertInfo(f" Saving data combined for {sub}.")
+            self.subDFFiles[sub].saveGPX()      #  Save combined in gpx format.
     # ----------------------------------------------------------------------------------------------------------------------- saveConfig() ----------
     def saveConfig(self):
         """  Save stuff to the config file, in case any has changed.

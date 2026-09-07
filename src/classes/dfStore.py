@@ -27,6 +27,8 @@ import pickle
 
 import src.projectPaths as pp
 
+import gpxpy
+import gpxpy.gpx
 import pandas as pd
 
 class dfStore():
@@ -54,6 +56,28 @@ class dfStore():
         """  Add a single data frame to the dfStore.
         """
         self.dfData = pd.concat([self.dfData, df])
+    #------------------------------------------------------------------------------------------------------------- saveGPX(self) --------------------
+    def saveGPX(self):
+        """  Save the data frame in gpx format
+        """
+        self.fileName = pp.DATA_PATH / f"{self.sub}.gpx"
+
+        # Create GPX objects
+        gpx = gpxpy.gpx.GPX()
+        gpx_track = gpxpy.gpx.GPXTrack()
+        gpx.tracks.append(gpx_track)
+        gpx_segment = gpxpy.gpx.GPXTrackSegment()
+        gpx_track.segments.append(gpx_segment)
+
+        # Add points from DataFrame
+        for _, row in self.dfData.iterrows():
+            gpx_segment.points.append(
+                gpxpy.gpx.GPXTrackPoint(row["latitude"], row["longitude"], row["elevation"], row["time"])
+            )
+
+        # Write to a .gpx file
+        with open(f"{self.fileName}", "w") as f:
+            f.write(gpx.to_xml())
     #------------------------------------------------------------------------------------------------------------- save(self) -----------------------
     def save(self):
         """  Save the dfStore in pickle format - pickle format.
